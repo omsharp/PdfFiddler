@@ -14,7 +14,7 @@ namespace PdfFiddler.ViewModels
     public partial class PdfPageViewModel : ObservableObject
     {
         [ObservableProperty]
-        private PdfPage page;
+        private PdfPage pdfPage;
 
         [ObservableProperty]
         private BitmapSource thumbnail;
@@ -22,11 +22,15 @@ namespace PdfFiddler.ViewModels
         [ObservableProperty]
         private int pageNumber;
 
-        public PdfPageViewModel(PdfPage page, int pageNumber, BitmapSource thumbnail)
+        [ObservableProperty]
+        private bool isSelected;
+
+        public PdfPageViewModel(PdfPage pdfPage, int pageNumber, BitmapSource thumbnail)
         {
-            this.page = page;
-            this.pageNumber = pageNumber;
-            this.thumbnail = thumbnail;
+            PdfPage = pdfPage;
+            PageNumber = pageNumber;
+            Thumbnail = thumbnail;
+            isSelected= false;
         }
 
     }

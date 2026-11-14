@@ -11,7 +11,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.Intrinsics.Arm;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using static PdfSharp.Pdf.PdfDictionary;
 using static PdfSharp.Quality.Testing.TestModel.TestArrayElements;
 
 namespace PdfFiddler.ViewModels
@@ -36,7 +38,6 @@ namespace PdfFiddler.ViewModels
         public PdfDocumentViewModel()
         {
             document = new PdfDocument();
-            Debug.WriteLine("Document View Model Created .....");
         }
 
         private bool CanAddPages() => !IsBusy;
@@ -57,12 +58,9 @@ namespace PdfFiddler.ViewModels
             try
             {
                 ProgressPercentage = 0;
-
                 var pdfBytes = await File.ReadAllBytesAsync(fileDialog.FileName);
-
                 using var pdfStream = new MemoryStream(pdfBytes);
                 using var pdfSource = PdfReader.Open(pdfStream, PdfDocumentOpenMode.Import);
-
                 var pagesCount = pdfSource.PageCount;
 
                 IProgress<int> progress = new Progress<int>(done =>
@@ -70,6 +68,7 @@ namespace PdfFiddler.ViewModels
                     ProgressPercentage = done * 100 / pagesCount;
                 });
 
+                // The heavy work is done in a separate thread.
                 var thumbnails = await Task.Run(() =>
                 {
                     var images = new List<BitmapSource>();
@@ -83,6 +82,7 @@ namespace PdfFiddler.ViewModels
                     return images;
                 }, cancellationToken);
 
+                // Cheap work done on the same UI thread
                 for (var i = 0; i < pdfSource.PageCount; i++)
                 {
                     var pageNumber = Pages.Count + 1;
@@ -97,6 +97,7 @@ namespace PdfFiddler.ViewModels
             finally
             {
                 IsBusy = false;
+                ProgressPercentage = 0;
             }
         }
 
@@ -105,7 +106,7 @@ namespace PdfFiddler.ViewModels
         {
             var fileDialog = new OpenFileDialog
             {
-                Filter = "Image Files|*.jpg|*.jpeg|*.png|*.bmp",
+                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp",
                 Title = "Select images",
                 Multiselect = true
             };
@@ -116,15 +117,27 @@ namespace PdfFiddler.ViewModels
 
             try
             {
+                var pageCount = Pages.Count + 1;
+
                 foreach (var imageFile in fileDialog.FileNames)
                 {
-                    using var image = XImage.FromFile(imageFile);
+                    using var imageStream = new FileStream(imageFile, FileMode.Open);
+                    using var image = XImage.FromStream(imageStream);
+
                     var page = document.AddPage();
+
                     // handle with and height
+                    page.Width = XUnit.FromPoint(image.PointWidth);
+                    page.Height = XUnit.FromPoint(image.PointHeight);
+
                     using var gfx = XGraphics.FromPdfPage(page);
                     gfx.DrawImage(image, 0, 0, page.Width.Point, page.Height.Point);
 
-                    //TODO: Pages.Add(new PdfPageViewModel(page));
+                    imageStream.Position = 0;
+                    var thumbnail = BitmapFrame.Create(imageStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+
+                    Pages.Add(new PdfPageViewModel(page, pageCount, thumbnail));
+                    pageCount++;
                 }
             }
             catch (OperationCanceledException)
@@ -151,9 +164,37 @@ namespace PdfFiddler.ViewModels
         }
 
         [RelayCommand]
-        private void SaveDocumentAs(string fileName)
+        private void SaveDocumentAs()
         {
-            document.Save(fileName);
+
+
+            var saveFileDialog = new SaveFileDialog()
+            {
+                Title = "Save PDF File",
+                Filter = "PDF Files|*.pdf",
+                DefaultExt = "pdf",
+                FileName = "untitled"
+            };
+
+            if (saveFileDialog.ShowDialog() == false) return;
+
+            IsBusy = true;
+
+            // we can not keep using the same document object after it was save
+            // we have to reload the saved file and create a new document object
+            // and we have to populate the Pages view model list with the new PdfPage objects
+            document.Save(saveFileDialog.FileName);
+            using var pdfSource = PdfReader.Open(saveFileDialog.FileName, PdfDocumentOpenMode.Import);
+            document.Dispose();
+            document = new PdfDocument();
+
+            for (var i = 0; i < pdfSource.Pages.Count; i++)
+            {
+                var pdfPage = document.AddPage(pdfSource.Pages[i]);
+                Pages[i].PdfPage = pdfPage;
+            }
+
+            IsBusy = false;
         }
 
         [RelayCommand]
