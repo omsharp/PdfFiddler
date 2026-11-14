@@ -12,6 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.Intrinsics.Arm;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using static PdfSharp.Pdf.PdfDictionary;
 using static PdfSharp.Quality.Testing.TestModel.TestArrayElements;
@@ -54,10 +55,10 @@ namespace PdfFiddler.ViewModels
             if (fileDialog.ShowDialog() == false) return;
 
             IsBusy = true;
+            ProgressPercentage = 0;
 
             try
             {
-                ProgressPercentage = 0;
                 var pdfBytes = await File.ReadAllBytesAsync(fileDialog.FileName);
                 using var pdfStream = new MemoryStream(pdfBytes);
                 using var pdfSource = PdfReader.Open(pdfStream, PdfDocumentOpenMode.Import);
@@ -85,9 +86,8 @@ namespace PdfFiddler.ViewModels
                 // Cheap work done on the same UI thread
                 for (var i = 0; i < pdfSource.PageCount; i++)
                 {
-                    var pageNumber = Pages.Count + 1;
                     var page = document.Pages.Add(pdfSource.Pages[i]);
-                    Pages.Add(new PdfPageViewModel(page, pageNumber, thumbnails[i]));
+                    Pages.Add(new PdfPageViewModel(page, Pages.Count + 1, thumbnails[i]));
                 }
             }
             catch (OperationCanceledException)
@@ -114,30 +114,48 @@ namespace PdfFiddler.ViewModels
             if (fileDialog.ShowDialog() == false) return;
 
             IsBusy = true;
+            ProgressPercentage = 0;
 
             try
             {
-                var pageCount = Pages.Count + 1;
 
-                foreach (var imageFile in fileDialog.FileNames)
+                IProgress<int> progress = new Progress<int>(done =>
                 {
-                    using var imageStream = new FileStream(imageFile, FileMode.Open);
-                    using var image = XImage.FromStream(imageStream);
+                    ProgressPercentage = done * 100 / fileDialog.FileNames.Length;
+                });
 
+                // The heavy work is done in a separate thread.
+                var thumbnails = await Task.Run(() =>
+                {
+                    var images = new List<BitmapSource>();
+                    for(var i =0; i<fileDialog.FileNames.Length; i++)
+                    {
+                        var imageFile = fileDialog.FileNames[i];
+                        using var imageStream = new FileStream(imageFile, FileMode.Open);
+                        using var image = XImage.FromStream(imageStream);
+                        imageStream.Position = 0;
+                        var thumbnail = BitmapFrame.Create(imageStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                        images.Add(thumbnail);
+                        progress.Report(i);
+                    }
+
+                    return images;
+                }, cancellationToken);
+
+
+                // Cheap work done on the same UI thread
+                for (var i = 0; i < fileDialog.FileNames.Count(); i++)
+                {
+                    using var image = XImage.FromFile(fileDialog.FileNames[i]);
+                    
                     var page = document.AddPage();
-
-                    // handle with and height
                     page.Width = XUnit.FromPoint(image.PointWidth);
                     page.Height = XUnit.FromPoint(image.PointHeight);
 
                     using var gfx = XGraphics.FromPdfPage(page);
                     gfx.DrawImage(image, 0, 0, page.Width.Point, page.Height.Point);
 
-                    imageStream.Position = 0;
-                    var thumbnail = BitmapFrame.Create(imageStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-
-                    Pages.Add(new PdfPageViewModel(page, pageCount, thumbnail));
-                    pageCount++;
+                    Pages.Add(new PdfPageViewModel(page, Pages.Count + 1, thumbnails[i]));
                 }
             }
             catch (OperationCanceledException)
@@ -147,6 +165,7 @@ namespace PdfFiddler.ViewModels
             finally
             {
                 IsBusy = false;
+                ProgressPercentage = 0;
             }
         }
 
