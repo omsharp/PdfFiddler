@@ -73,9 +73,11 @@
             <ListBox
                 x:Name="pagesPreviewListBox"
                 Padding="10"
+                HorizontalContentAlignment="Stretch"
                 Background="#f5f5fa"
                 ItemsSource="{Binding Pages}"
-                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                SelectedItem="{Binding IsSelected, Mode=TwoWay}">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -86,6 +88,7 @@
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
+                        <EventSetter Event="PreviewGotKeyboardFocus" Handler="SelectCurrentItem" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemsPanel>
@@ -98,10 +101,12 @@
                         <Border
                             Margin="5"
                             Padding="8"
+                            Background="Transparent"
                             BorderBrush="LightGray"
-                            BorderThickness="0"
+                            BorderThickness="1"
                             CornerRadius="5">
                             <StackPanel VerticalAlignment="Center">
+                                <Button Command="{Binding ToggleSelectCommand}">Select</Button>
                                 <Image
                                     x:Name="previewImage"
                                     Width="200"

@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using PdfSharp.Pdf;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Media.Imaging;
@@ -33,5 +35,14 @@ namespace PdfFiddler.ViewModels
             isSelected= false;
         }
 
+
+        [RelayCommand]
+        private void ToggleSelect()
+        {
+            IsSelected = !IsSelected;
+            Debug.WriteLine("--------------  Selected -------------------");
+            Debug.WriteLine(@$"IsSelected = {IsSelected}");
+            Debug.WriteLine("--------------------------------------------");
+        }
     }
 }
