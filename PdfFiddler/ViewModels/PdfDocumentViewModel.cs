@@ -8,14 +8,8 @@ using PDFtoImage;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Runtime.Intrinsics.Arm;
-using System.Windows.Controls;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using static PdfSharp.Pdf.PdfDictionary;
-using static PdfSharp.Quality.Testing.TestModel.TestArrayElements;
 
 namespace PdfFiddler.ViewModels
 {
@@ -29,6 +23,13 @@ namespace PdfFiddler.ViewModels
         private PdfDocument document;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AddPagesFromPdfFileCommand))]
+        [NotifyCanExecuteChangedFor(nameof(AddPagesFromImagesCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ResetCommand))]
+        [NotifyCanExecuteChangedFor(nameof(MovePageCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RemoveSelectedPagesCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RotatePageCommand))]
+        [NotifyCanExecuteChangedFor(nameof(SaveDocumentAsCommand))]
         private bool isBusy = false;
 
         [ObservableProperty]
@@ -41,9 +42,9 @@ namespace PdfFiddler.ViewModels
             document = new PdfDocument();
         }
 
-        private bool CanAddPages() => !IsBusy;
+        private bool CanExecuteActions() => !IsBusy;
 
-        [RelayCommand(CanExecute = nameof(CanAddPages), IncludeCancelCommand = true)]
+        [RelayCommand(CanExecute = nameof(CanExecuteActions), IncludeCancelCommand = true)]
         private async Task AddPagesFromPdfFileAsync(CancellationToken cancellationToken)
         {
             var fileDialog = new OpenFileDialog
@@ -101,7 +102,7 @@ namespace PdfFiddler.ViewModels
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanAddPages), IncludeCancelCommand = true)]
+        [RelayCommand(CanExecute = nameof(CanExecuteActions), IncludeCancelCommand = true)]
         private async Task AddPagesFromImagesAsync(CancellationToken cancellationToken)
         {
             var fileDialog = new OpenFileDialog
@@ -128,7 +129,7 @@ namespace PdfFiddler.ViewModels
                 var thumbnails = await Task.Run(() =>
                 {
                     var images = new List<BitmapSource>();
-                    for(var i =0; i<fileDialog.FileNames.Length; i++)
+                    for (var i = 0; i < fileDialog.FileNames.Length; i++)
                     {
                         var imageFile = fileDialog.FileNames[i];
                         using var imageStream = new FileStream(imageFile, FileMode.Open);
@@ -147,7 +148,7 @@ namespace PdfFiddler.ViewModels
                 for (var i = 0; i < fileDialog.FileNames.Count(); i++)
                 {
                     using var image = XImage.FromFile(fileDialog.FileNames[i]);
-                    
+
                     var page = document.AddPage();
                     page.Width = XUnit.FromPoint(image.PointWidth);
                     page.Height = XUnit.FromPoint(image.PointHeight);
@@ -169,20 +170,46 @@ namespace PdfFiddler.ViewModels
             }
         }
 
-        [RelayCommand]
-        private void RemovePageAt(int index)
+        [RelayCommand(CanExecute = nameof(CanExecuteActions))]
+        private void RemoveSelectedPages()
         {
-            document.Pages.RemoveAt(index);
-            Pages.RemoveAt(index);
+            var index = 0;
+            while (index < Pages.Count)
+            {
+                if (Pages[index].IsSelected)
+                {
+                    document.Pages.RemoveAt(index);
+                    Pages.RemoveAt(index);
+                }
+                else
+                {
+                    Pages[index].PageNumber = index + 1;
+                    index++;
+                }
+            }
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanExecuteActions))]
         private void MovePage(int index)
         {
             throw new NotImplementedException();
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanExecuteActions))]
+        private void RotatePage(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanExecuteActions))]
+        private void Reset(string fileName)
+        {
+            Pages.Clear();
+            document.Dispose();
+            document = new PdfDocument();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanExecuteActions))]
         private void SaveDocumentAs()
         {
 
@@ -214,14 +241,6 @@ namespace PdfFiddler.ViewModels
             }
 
             IsBusy = false;
-        }
-
-        [RelayCommand]
-        private void Reset(string fileName)
-        {
-            Pages.Clear();
-            document.Dispose();
-            document = new PdfDocument();
         }
 
         private static BitmapSource ToBitmapSource(SKBitmap source)
