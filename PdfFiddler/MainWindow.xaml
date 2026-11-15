@@ -34,54 +34,99 @@
                 Width="100"
                 Height="30"
                 Margin="5"
-                Command="{Binding AddPagesFromPdfFileCommand}">
-                Add PDF File
-            </Button>
+                Command="{Binding AddPagesFromPdfFileCommand}"
+                Content="Add PDF File" />
             <Button
                 Width="100"
                 Height="30"
                 Margin="5"
-                Command="{Binding AddPagesFromImagesCommand}">
-                Add Images
-            </Button>
+                Command="{Binding AddPagesFromImagesCommand}"
+                Content="Add Images" />
             <Button
                 Width="100"
                 Height="30"
                 Margin="5"
-                Command="{Binding RemoveSelectedPagesCommand}">
-                Remove
-            </Button>
+                Command="{Binding RemoveSelectedPagesCommand}"
+                Content="Remove" />
             <Button
                 Width="100"
                 Height="30"
                 Margin="5"
-                Command="{Binding ResetCommand}">
-                Reset
-            </Button>
+                Command="{Binding RotateSelectedPagesCommand}"
+                Content="Rotate" />
+            <Button
+                Width="50"
+                Height="30"
+                Margin="5"
+                Command="{Binding MoveSelectedPagesUpCommand}"
+                Content="Up" />
+            <Button
+                Width="50"
+                Height="30"
+                Margin="5"
+                Command="{Binding MoveSelectedPagesDownCommand}"
+                Content="Down" />
             <Button
                 Width="100"
                 Height="30"
                 Margin="5"
-                Command="{Binding SaveDocumentAsCommand}">
-                SaveAs
-            </Button>
+                Command="{Binding ClearSelectionCommand}"
+                Content="Unselect all" />
+            <Button
+                Width="100"
+                Height="30"
+                Margin="5"
+                Command="{Binding ResetCommand}"
+                Content="Reset" />
+            <Button
+                Width="100"
+                Height="30"
+                Margin="5"
+                Command="{Binding SaveDocumentAsCommand}"
+                Content="SaveAs" />
             <Button
                 x:Name="zoomOutButton"
-                Width="40"
+                Width="30"
                 Height="30"
                 Margin="5"
                 Click="zoomOutButton_Click"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}">
-                -
+                Content="-">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="IsEnabled" Value="False" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsBusy}" Value="False" />
+                                    <Condition Binding="{Binding IsEmpty}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
             </Button>
             <Button
                 x:Name="zoomInButton"
-                Width="40"
+                Width="30"
                 Height="30"
                 Margin="1"
                 Click="zoomInButton_Click"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBool}}">
-                +
+                Content="+">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="IsEnabled" Value="False" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsBusy}" Value="False" />
+                                    <Condition Binding="{Binding IsEmpty}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
             </Button>
         </StackPanel>
 
