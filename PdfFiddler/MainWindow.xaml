@@ -10,11 +10,14 @@
     Title="PDF Fiddler"
     Width="1000"
     Height="720"
+    MinWidth="400"
+    MinHeight="400"
     d:DataContext="{d:DesignInstance Type=viewmodels:PdfPageViewModel}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.Resources>
         <SolidColorBrush x:Key="SelectedPageHighlight">#f76863</SolidColorBrush>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -23,6 +26,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!--  Header  -->
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Button
                 Width="100"
@@ -72,115 +76,127 @@
 
 
 
-        <Border Grid.Row="1">
-            <ListBox
-                x:Name="pagesPreviewListBox"
-                Padding="10"
-                HorizontalContentAlignment="Stretch"
-                Background="#f5f5fa"
-                ItemsSource="{Binding Pages}"
-                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                SelectedItem="{Binding IsSelected, Mode=TwoWay}"
-                SelectionMode="Multiple">
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListBoxItem}">
-                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                    <ContentPresenter />
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel HorizontalAlignment="Center" IsItemsHost="True" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border
-                            Padding="5"
-                            Background="Transparent"
-                            CornerRadius="0">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                            <Setter Property="BorderBrush" Value="{StaticResource SelectedPageHighlight}" />
-                                            <Setter Property="BorderThickness" Value="2" />
-                                            <Setter Property="Margin" Value="4" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
-                                            <Setter Property="BorderBrush" Value="LightGray" />
-                                            <Setter Property="BorderThickness" Value="1" />
-                                            <Setter Property="Margin" Value="5" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <StackPanel VerticalAlignment="Center">
-                                <Image
-                                    x:Name="previewImage"
-                                    Width="200"
-                                    Height="200"
-                                    Source="{Binding Thumbnail}"
-                                    Stretch="Uniform" />
-                                <TextBlock
-                                    Margin="0,5,0,0"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    FontWeight="Bold"
-                                    Text="{Binding PageNumber, StringFormat=Page {0}}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                    <Setter Property="Foreground" Value="{StaticResource SelectedPageHighlight}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
-                                                    <Setter Property="Foreground" Value="Gray" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </Border>
 
-        <Border Grid.Row="2" Padding="5,2">
-            <Grid>
+        <!--  Document View  -->
+        <ListBox
+            x:Name="pagesPreviewListBox"
+            Grid.Row="1"
+            Padding="10"
+            HorizontalContentAlignment="Stretch"
+            Background="#f5f5fa"
+            ItemsSource="{Binding Pages}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            SelectedItem="{Binding IsSelected, Mode=TwoWay}"
+            SelectionMode="Multiple">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel HorizontalAlignment="Center" IsItemsHost="True" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        Padding="5"
+                        Background="Transparent"
+                        CornerRadius="0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource SelectedPageHighlight}" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="Margin" Value="4" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                                        <Setter Property="BorderBrush" Value="LightGray" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="Margin" Value="5" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel VerticalAlignment="Center">
+                            <Image
+                                x:Name="previewImage"
+                                Width="200"
+                                Height="200"
+                                Source="{Binding Thumbnail}"
+                                Stretch="Uniform" />
+                            <TextBlock
+                                Margin="0,5,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="{Binding PageNumber, StringFormat=Page {0}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource SelectedPageHighlight}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                                                <Setter Property="Foreground" Value="Gray" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!--  Progress Overlay  -->
+        <Border Grid.Row="1" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}">
+            <Border.Background>
+                <SolidColorBrush Opacity="0.6" Color="LightGray" />
+            </Border.Background>
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-                <TextBlock
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Text="By Omar Rwemi" />
-
                 <ProgressBar
-                    Grid.Column="2"
-                    Width="250"
-                    Height="20"
+                    Grid.Column="0"
+                    Width="500"
+                    Height="40"
+                    Margin="15,0"
+                    BorderBrush="LightGray"
+                    BorderThickness="2"
+                    Foreground="#43b078"
                     Maximum="100"
                     Value="{Binding ProgressPercentage}" />
 
                 <TextBlock
-                    Grid.Column="2"
+                    Grid.Column="0"
+                    Margin="5"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{Binding ProgressPercentage, StringFormat={}{0:0}%}" />
+                    FontSize="22"
+                    FontWeight="DemiBold"
+                    Text="{Binding ProgressPercentage, StringFormat={}{0,0}%}" />
 
             </Grid>
+        </Border>
+
+        <!--  Footer  -->
+        <Border Grid.Row="2" Padding="5,2">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="By Omar Rwemi" />
         </Border>
     </Grid>
 </Window>
