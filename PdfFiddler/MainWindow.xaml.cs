@@ -37,12 +37,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void SelectCurrentItem(object sender, KeyboardFocusChangedEventArgs e)
-    {
-        if (sender is ListBoxItem item)
-            item.IsSelected = true;
-    }
-
     private void zoomOutButton_Click(object sender, RoutedEventArgs e)
     {
         foreach (var image in FindVisualChildren<Image>(pagesPreviewListBox))

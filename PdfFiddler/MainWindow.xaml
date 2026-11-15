@@ -13,6 +13,9 @@
     d:DataContext="{d:DesignInstance Type=viewmodels:PdfPageViewModel}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    <Window.Resources>
+        <SolidColorBrush x:Key="SelectedPageHighlight">#f76863</SolidColorBrush>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -77,7 +80,8 @@
                 Background="#f5f5fa"
                 ItemsSource="{Binding Pages}"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                SelectedItem="{Binding IsSelected, Mode=TwoWay}">
+                SelectedItem="{Binding IsSelected, Mode=TwoWay}"
+                SelectionMode="Multiple">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="{x:Type ListBoxItem}">
                         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -88,7 +92,6 @@
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
-                        <EventSetter Event="PreviewGotKeyboardFocus" Handler="SelectCurrentItem" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemsPanel>
@@ -99,14 +102,26 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border
-                            Margin="5"
-                            Padding="8"
+                            Padding="5"
                             Background="Transparent"
-                            BorderBrush="LightGray"
-                            BorderThickness="1"
-                            CornerRadius="5">
+                            CornerRadius="0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource SelectedPageHighlight}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                            <Setter Property="Margin" Value="4" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                                            <Setter Property="BorderBrush" Value="LightGray" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="Margin" Value="5" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <StackPanel VerticalAlignment="Center">
-                                <Button Command="{Binding ToggleSelectCommand}">Select</Button>
                                 <Image
                                     x:Name="previewImage"
                                     Width="200"
@@ -118,8 +133,20 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     FontWeight="Bold"
-                                    Foreground="Gray"
-                                    Text="{Binding PageNumber, StringFormat=Page {0}}" />
+                                    Text="{Binding PageNumber, StringFormat=Page {0}}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource SelectedPageHighlight}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False">
+                                                    <Setter Property="Foreground" Value="Gray" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
