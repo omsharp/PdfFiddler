@@ -7,6 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <ApplicationIcon>app.ico</ApplicationIcon>
+        <Title>PDF Fiddler</Title>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +16,7 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+      <PackageReference Include="MahApps.Metro.IconPacks.Lucide" Version="6.2.1" />
       <PackageReference Include="PDFsharp" Version="7.0.0-preview-2" />
       <PackageReference Include="PDFtoImage" Version="5.4.0" />
     </ItemGroup>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using MahApps.Metro.IconPacks;
+using Microsoft.Win32;
 using PdfFiddler.ViewModels;
 using System.Text;
 using System.Windows;
@@ -12,6 +13,20 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace PdfFiddler;
+
+public static class ButtonProperties
+{
+    public static readonly DependencyProperty IconProperty = DependencyProperty.RegisterAttached(
+        "Icon",
+        typeof(PackIconLucide),
+        typeof(ButtonProperties),
+        new PropertyMetadata(null));
+
+    public static PackIconLucide GetIcon(DependencyObject obj) => (PackIconLucide)obj.GetValue(IconProperty);
+    public static void SetIcon(DependencyObject obj, PackIconLucide value) => obj.SetValue(IconProperty, value);
+}
+
+
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

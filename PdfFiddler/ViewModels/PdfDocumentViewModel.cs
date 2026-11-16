@@ -49,6 +49,7 @@ namespace PdfFiddler.ViewModels
         public PdfDocumentViewModel()
         {
             document = new PdfDocument();
+            IsEmpty = true;
             Pages.CollectionChanged += OnCollectionChanged;
         }
 
@@ -332,6 +333,7 @@ namespace PdfFiddler.ViewModels
             Pages.Clear();
             document.Dispose();
             document = new PdfDocument();
+            IsEmpty = true;
         }
 
         [RelayCommand(CanExecute = nameof(CanSaveDocumentAs))]

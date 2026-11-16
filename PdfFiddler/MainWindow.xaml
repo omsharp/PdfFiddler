@@ -4,16 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="clr-namespace:PdfFiddler.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:local="clr-namespace:PdfFiddler"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="clr-namespace:PdfFiddler.ViewModels"
-    xmlns:views="clr-namespace:PdfFiddler.Views"
     Title="PDF Fiddler"
     Width="1000"
     Height="720"
     MinWidth="400"
     MinHeight="400"
     d:DataContext="{d:DesignInstance Type=viewmodels:PdfPageViewModel}"
+    Background="#f5f5fa"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Window.Resources>
@@ -29,71 +30,145 @@
         </Grid.RowDefinitions>
 
         <!--  Header  -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
+        <StackPanel
+            Grid.Row="0"
+            Margin="5"
+            Orientation="Horizontal">
             <Button
-                Width="100"
-                Height="30"
                 Margin="5"
-                Command="{Binding AddPagesFromPdfFileCommand}"
-                Content="Add PDF File" />
+                Padding="5,0"
+                BorderBrush="DarkGray"
+                Command="{Binding AddPagesFromPdfFileCommand}">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    ToolTip="Add pages from PDF file">
+                    <iconPacks:PackIconLucide
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,4,0"
+                        Kind="FilePlusCorner" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Add PDF" />
+                </StackPanel>
+            </Button>
             <Button
-                Width="100"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding AddPagesFromImagesCommand}"
-                Content="Add Images" />
+                ToolTip="Add pages from images">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    ToolTip="Add pages from image files">
+                    <iconPacks:PackIconLucide
+                        Width="16"
+                        Height="16"
+                        Margin="0,0,4,0"
+                        Kind="ImagePlus" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Add Images" />
+                </StackPanel>
+            </Button>
+
+            <Separator
+                Width="25"
+                Margin="10,0"
+                BorderBrush="LightGray"
+                BorderThickness="1">
+                <Separator.LayoutTransform>
+                    <RotateTransform Angle="90" />
+                </Separator.LayoutTransform>
+            </Separator>
+
+
             <Button
-                Width="100"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding RemoveSelectedPagesCommand}"
-                Content="Remove" />
+                ToolTip="Remove selected pages from document">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="Trash2" />
+            </Button>
             <Button
-                Width="100"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding RotateSelectedPagesCommand}"
-                Content="Rotate" />
+                ToolTip="Rotate selected pages 90° clockwise">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="RotateCw" />
+            </Button>
             <Button
-                Width="50"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding MoveSelectedPagesUpCommand}"
-                Content="Up" />
+                ToolTip="Move selected pages up">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="ChevronsUp" />
+            </Button>
             <Button
-                Width="50"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding MoveSelectedPagesDownCommand}"
-                Content="Down" />
+                ToolTip="Move selected pages down">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="ChevronsDown" />
+            </Button>
             <Button
-                Width="100"
-                Height="30"
                 Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
                 Command="{Binding ClearSelectionCommand}"
-                Content="Unselect all" />
-            <Button
-                Width="100"
-                Height="30"
-                Margin="5"
-                Command="{Binding ResetCommand}"
-                Content="Reset" />
-            <Button
-                Width="100"
-                Height="30"
-                Margin="5"
-                Command="{Binding SaveDocumentAsCommand}"
-                Content="SaveAs" />
+                ToolTip="Unselect all pages">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="FileX" />
+            </Button>
+
+            <Separator
+                Width="25"
+                Margin="10,0"
+                BorderBrush="LightGray"
+                BorderThickness="1">
+                <Separator.LayoutTransform>
+                    <RotateTransform Angle="90" />
+                </Separator.LayoutTransform>
+            </Separator>
+
             <Button
                 x:Name="zoomOutButton"
-                Width="30"
-                Height="30"
                 Margin="5"
+                Padding="5"
                 Click="zoomOutButton_Click"
-                Content="-">
+                ToolTip="Zoom out">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="ZoomOut" />
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="IsEnabled" Value="False" />
+                        <Setter Property="BorderBrush" Value="DarkGray" />
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
@@ -108,14 +183,18 @@
             </Button>
             <Button
                 x:Name="zoomInButton"
-                Width="30"
-                Height="30"
-                Margin="1"
+                Margin="5"
+                Padding="5"
                 Click="zoomInButton_Click"
-                Content="+">
+                ToolTip="Zoom in">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="ZoomIn" />
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="IsEnabled" Value="False" />
+                        <Setter Property="BorderBrush" Value="DarkGray" />
                         <Style.Triggers>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
@@ -128,6 +207,39 @@
                     </Style>
                 </Button.Style>
             </Button>
+
+            <Separator
+                Width="25"
+                Margin="10,0"
+                BorderBrush="LightGray"
+                BorderThickness="1">
+                <Separator.LayoutTransform>
+                    <RotateTransform Angle="90" />
+                </Separator.LayoutTransform>
+            </Separator>
+
+            <Button
+                Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
+                Command="{Binding ResetCommand}"
+                ToolTip="Start new document">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="BrushCleaning" />
+            </Button>
+            <Button
+                Margin="5"
+                Padding="5,0"
+                BorderBrush="DarkGray"
+                Command="{Binding SaveDocumentAsCommand}"
+                ToolTip="Save the current document">
+                <iconPacks:PackIconLucide
+                    Width="16"
+                    Height="16"
+                    Kind="Save" />
+            </Button>
         </StackPanel>
 
         <!--  Document View  -->
@@ -139,7 +251,7 @@
             Background="#f5f5fa"
             ItemsSource="{Binding Pages}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-            SelectionMode="Multiple">
+            SelectionMode="Extended">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
                     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -245,10 +357,12 @@
         </Border>
 
         <!--  Footer  -->
-        <Border Grid.Row="2" Padding="5,2">
+        <Border Grid.Row="2" Padding="6,4,0,5">
             <TextBlock
                 Grid.Column="0"
                 VerticalAlignment="Center"
+                FontWeight="DemiBold"
+                Foreground="DimGray"
                 Text="By Omar Rwemi" />
         </Border>
     </Grid>
