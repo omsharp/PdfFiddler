@@ -9,19 +9,12 @@ using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace PdfFiddler.ViewModels
 {
-    public enum MovePageDirection
-    {
-        Up, Down
-    }
-
     public partial class PdfDocumentViewModel : ObservableObject
     {
         private PdfDocument document;
@@ -39,12 +32,19 @@ namespace PdfFiddler.ViewModels
         private bool isBusy = false;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ClearSelectionCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ResetCommand))]
+        [NotifyCanExecuteChangedFor(nameof(MoveSelectedPagesUpCommand))]
+        [NotifyCanExecuteChangedFor(nameof(MoveSelectedPagesDownCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RemoveSelectedPagesCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RotateSelectedPagesCommand))]
+        [NotifyCanExecuteChangedFor(nameof(SaveDocumentAsCommand))]
+        private bool isEmpty;
+
+        [ObservableProperty]
         private int progressPercentage;
 
         public ObservableCollection<PdfPageViewModel> Pages { get; } = [];
-
-        [ObservableProperty]
-        private bool isEmpty;
 
         public PdfDocumentViewModel()
         {
@@ -54,27 +54,27 @@ namespace PdfFiddler.ViewModels
         }
 
 
-        private bool CanExecuteActions() => !IsBusy;
-        private bool CanClearSelection() => CanExecuteActions() && Pages.Any(p => p.IsSelected);
-        private bool CanRotateSelectedPages() => CanExecuteActions() && Pages.Any(p => p.IsSelected);
-        private bool CanRemoveSelectedPages() => CanExecuteActions() && Pages.Any(p => p.IsSelected);
-        private bool CanReset() => CanExecuteActions() && Pages.Count != 0;
-        private bool CanSaveDocumentAs() => CanExecuteActions() && Pages.Count != 0;
+        private bool CanExecuteCommand() => !IsBusy;
+        private bool CanClearSelection() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
+        private bool CanRotateSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
+        private bool CanRemoveSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
+        private bool CanReset() => CanExecuteCommand() && Pages.Count != 0;
+        private bool CanSaveDocumentAs() => CanExecuteCommand() && Pages.Count != 0;
 
 
         private bool CanMoveSelectedPagesUp()
         {
             var firstSelection = Pages.FirstOrDefault(p => p.IsSelected);
-            return CanExecuteActions() && Pages.Count > 0 && firstSelection != null && firstSelection.PageNumber > 1;
+            return CanExecuteCommand() && Pages.Count > 0 && firstSelection != null && firstSelection.PageNumber > 1;
         }
 
         private bool CanMoveSelectedPagesDown()
         {
             var lastSelection = Pages.LastOrDefault(p => p.IsSelected);
-            return CanExecuteActions() && Pages.Count > 0 && lastSelection != null && lastSelection.PageNumber < Pages.Count;
+            return CanExecuteCommand() && Pages.Count > 0 && lastSelection != null && lastSelection.PageNumber < Pages.Count;
         }
 
-        [RelayCommand(CanExecute = nameof(CanExecuteActions), IncludeCancelCommand = true)]
+        [RelayCommand(CanExecute = nameof(CanExecuteCommand), IncludeCancelCommand = true)]
         private async Task AddPagesFromPdfFileAsync(CancellationToken cancellationToken)
         {
             var fileDialog = new OpenFileDialog
@@ -132,7 +132,7 @@ namespace PdfFiddler.ViewModels
             }
         }
 
-        [RelayCommand(CanExecute = nameof(CanExecuteActions), IncludeCancelCommand = true)]
+        [RelayCommand(CanExecute = nameof(CanExecuteCommand), IncludeCancelCommand = true)]
         private async Task AddPagesFromImagesAsync(CancellationToken cancellationToken)
         {
             var fileDialog = new OpenFileDialog
@@ -265,7 +265,7 @@ namespace PdfFiddler.ViewModels
                     return;
                 }
 
-                for(var i = 0; i < indicesToMove.Count; i++)
+                for (var i = 0; i < indicesToMove.Count; i++)
                 {
                     document.Pages.MovePage(indicesToMove[i], moveToIndex);
                     Pages.Move(indicesToMove[i], moveToIndex);
@@ -273,7 +273,7 @@ namespace PdfFiddler.ViewModels
                 }
 
                 // renumber pages
-                for(var i = 0; i < Pages.Count; i++)
+                for (var i = 0; i < Pages.Count; i++)
                 {
                     Pages[i].PageNumber = i + 1;
                 }
@@ -299,7 +299,7 @@ namespace PdfFiddler.ViewModels
                     return;
                 }
 
-                for (var i = indicesToMove.Count - 1; i >= 0 ; i--)
+                for (var i = indicesToMove.Count - 1; i >= 0; i--)
                 {
                     document.Pages.MovePage(indicesToMove[i], moveToIndex);
                     Pages.Move(indicesToMove[i], moveToIndex);
@@ -391,15 +391,6 @@ namespace PdfFiddler.ViewModels
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-
-            ResetCommand.NotifyCanExecuteChanged();
-            SaveDocumentAsCommand.NotifyCanExecuteChanged();
-
-            MoveSelectedPagesUpCommand.NotifyCanExecuteChanged();
-            MoveSelectedPagesDownCommand.NotifyCanExecuteChanged();
-            ClearSelectionCommand.NotifyCanExecuteChanged();
-            RotateSelectedPagesCommand.NotifyCanExecuteChanged();
-            RemoveSelectedPagesCommand.NotifyCanExecuteChanged();
 
             IsEmpty = Pages.Count < 1;
 

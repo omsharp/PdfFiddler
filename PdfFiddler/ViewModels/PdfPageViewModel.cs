@@ -13,7 +13,7 @@ namespace PdfFiddler.ViewModels
         private BitmapSource thumbnail;
 
         [ObservableProperty]
-        private int pageNumber;
+        private int pageNumber; 
 
         [ObservableProperty]
         private bool isSelected;

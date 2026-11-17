@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0-windows7.0</TargetFramework>
@@ -7,6 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
         <ApplicationIcon>app.ico</ApplicationIcon>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <Title>PDF Fiddler</Title>
     </PropertyGroup>
 
@@ -21,4 +23,5 @@
       <PackageReference Include="PDFtoImage" Version="5.4.0" />
     </ItemGroup>
 
+	
 </Project>
