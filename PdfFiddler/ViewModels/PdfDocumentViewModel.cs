@@ -28,6 +28,8 @@ namespace PdfFiddler.ViewModels
         [NotifyCanExecuteChangedFor(nameof(MoveSelectedPagesDownCommand))]
         [NotifyCanExecuteChangedFor(nameof(RemoveSelectedPagesCommand))]
         [NotifyCanExecuteChangedFor(nameof(RotateSelectedPagesCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ZoomInCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ZoomOutCommand))]
         [NotifyCanExecuteChangedFor(nameof(SaveDocumentAsCommand))]
         private bool isBusy = false;
 
@@ -36,6 +38,8 @@ namespace PdfFiddler.ViewModels
         [NotifyCanExecuteChangedFor(nameof(ResetCommand))]
         [NotifyCanExecuteChangedFor(nameof(MoveSelectedPagesUpCommand))]
         [NotifyCanExecuteChangedFor(nameof(MoveSelectedPagesDownCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ZoomInCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ZoomOutCommand))]
         [NotifyCanExecuteChangedFor(nameof(RemoveSelectedPagesCommand))]
         [NotifyCanExecuteChangedFor(nameof(RotateSelectedPagesCommand))]
         [NotifyCanExecuteChangedFor(nameof(SaveDocumentAsCommand))]
@@ -44,12 +48,18 @@ namespace PdfFiddler.ViewModels
         [ObservableProperty]
         private int progressPercentage;
 
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ZoomInCommand))]
+        [NotifyCanExecuteChangedFor(nameof(ZoomOutCommand))]
+        private double zoomLevel;
+
         public ObservableCollection<PdfPageViewModel> Pages { get; } = [];
 
         public PdfDocumentViewModel()
         {
             document = new PdfDocument();
             IsEmpty = true;
+            ZoomLevel = 0.25;
             Pages.CollectionChanged += OnCollectionChanged;
         }
 
@@ -58,6 +68,8 @@ namespace PdfFiddler.ViewModels
         private bool CanClearSelection() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
         private bool CanRotateSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
         private bool CanRemoveSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
+        private bool CanZoomIn() => CanExecuteCommand() && !IsEmpty && ZoomLevel < 1;
+        private bool CanZoomOut() => CanExecuteCommand() && !IsEmpty && ZoomLevel > -1;
         private bool CanReset() => CanExecuteCommand() && Pages.Count != 0;
         private bool CanSaveDocumentAs() => CanExecuteCommand() && Pages.Count != 0;
 
@@ -316,6 +328,20 @@ namespace PdfFiddler.ViewModels
             IsBusy = false;
         }
 
+        [RelayCommand(CanExecute = nameof(CanZoomIn))]
+        private void ZoomIn()
+        {
+            if (ZoomLevel >= 1) return;
+            ZoomLevel += 0.1;
+
+        }
+
+        [RelayCommand(CanExecute = nameof(CanZoomOut))]
+        private void ZoomOut()
+        {
+            if (ZoomLevel <= 0.1) return;
+            ZoomLevel -= 0.1;
+        }
 
         [RelayCommand(CanExecute = nameof(CanClearSelection))]
         private void ClearSelection()
