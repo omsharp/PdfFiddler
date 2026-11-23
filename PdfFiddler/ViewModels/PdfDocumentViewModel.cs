@@ -17,6 +17,11 @@ namespace PdfFiddler.ViewModels
 {
     public partial class PdfDocumentViewModel : ObservableObject
     {
+        private const double ZOOM_LEVEL_BASE = 0.25;
+        private const double ZOOM_LEVEL_FACTOR = 0.1;
+        private const double ZOOM_LEVEL_MAX = 1;
+        private const double ZOOM_LEVEL_MIN = 0.1;
+
         private PdfDocument document;
 
         [ObservableProperty]
@@ -59,7 +64,7 @@ namespace PdfFiddler.ViewModels
         {
             document = new PdfDocument();
             IsEmpty = true;
-            ZoomLevel = 0.25;
+            ZoomLevel = ZOOM_LEVEL_BASE;
             Pages.CollectionChanged += OnCollectionChanged;
         }
 
@@ -68,8 +73,8 @@ namespace PdfFiddler.ViewModels
         private bool CanClearSelection() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
         private bool CanRotateSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
         private bool CanRemoveSelectedPages() => CanExecuteCommand() && Pages.Any(p => p.IsSelected);
-        private bool CanZoomIn() => CanExecuteCommand() && !IsEmpty && ZoomLevel < 1;
-        private bool CanZoomOut() => CanExecuteCommand() && !IsEmpty && ZoomLevel > -1;
+        private bool CanZoomIn() => CanExecuteCommand() && !IsEmpty && ZoomLevel < ZOOM_LEVEL_MAX;
+        private bool CanZoomOut() => CanExecuteCommand() && !IsEmpty && ZoomLevel > ZOOM_LEVEL_MIN;
         private bool CanReset() => CanExecuteCommand() && Pages.Count != 0;
         private bool CanSaveDocumentAs() => CanExecuteCommand() && Pages.Count != 0;
 
@@ -331,16 +336,16 @@ namespace PdfFiddler.ViewModels
         [RelayCommand(CanExecute = nameof(CanZoomIn))]
         private void ZoomIn()
         {
-            if (ZoomLevel >= 1) return;
-            ZoomLevel += 0.1;
+            if (ZoomLevel >= ZOOM_LEVEL_MAX) return;
+            ZoomLevel += ZOOM_LEVEL_FACTOR;
 
         }
 
         [RelayCommand(CanExecute = nameof(CanZoomOut))]
         private void ZoomOut()
         {
-            if (ZoomLevel <= 0.1) return;
-            ZoomLevel -= 0.1;
+            if (ZoomLevel <= ZOOM_LEVEL_MIN) return;
+            ZoomLevel -= ZOOM_LEVEL_FACTOR;
         }
 
         [RelayCommand(CanExecute = nameof(CanClearSelection))]
